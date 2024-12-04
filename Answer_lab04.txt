@@ -1,0 +1,52 @@
+Question: Alternatively, to compare items in the cart, instead of using Comparator, we can use the Comparable interface and override the compareTo()method. You can refer to the Java docs to see the information of this interface. 
+Suppose we are taking this Comparable interface approach.
+-	What class should implement the Comparable interface?
+-	In those classes, how should you implement the compareTo()method be to reflect the ordering that we want?
+-	Can we have two ordering rules of the item (by title then cost and by cost then title) if we use this Comparable interface approach?
+-	Suppose the DVDs has a different ordering rule from the other media types, that is by title, then decreasing length, then cost. How would you modify your code to allow this?
+
+
+Answer:
+
+
+1. Lớp nào nên implement `Comparable`? 
+   Lớp `Media` nên implement `Comparable` vì đây là lớp cha của tất cả các loại Media (DVD, CD, Book) và là nơi chứa thông tin cơ bản như tiêu đề (title) và giá (cost).
+
+2. triển khai `compareTo()` như thế nào?  
+   - Trong lớp `Media`, triển khai `compareTo()` để sắp xếp theo tiêu đề (title) trước, sau đó đến giá (cost). Ví dụ:
+    
+     @Override
+     public int compareTo(Media other) {
+         int titleComparison = this.title.compareTo(other.title);
+         if (titleComparison == 0) {
+             return Float.compare(this.cost, other.cost); // Giá tăng dần
+         }
+         return titleComparison;
+     }
+
+
+3. Có thể có hai quy tắc sắp xếp (title -> cost và cost -> title) với `Comparable` không?
+   Không, `Comparable` chỉ cho phép **một quy tắc sắp xếp mặc định** (được định nghĩa trong `compareTo()`). Nếu cần nhiều quy tắc sắp xếp khác nhau, phải sử dụng `Comparator`.
+
+4. Nếu DVD có quy tắc sắp xếp riêng (title -> length giảm dần -> cost), làm thế nào?  
+   - Ghi đè phương thức `compareTo()` trong lớp `DigitalVideoDisc` (DVD) để thực hiện quy tắc sắp xếp riêng:
+     
+     @Override
+     public int compareTo(Media other) {
+         if (other instanceof DigitalVideoDisc) {
+             DigitalVideoDisc dvd = (DigitalVideoDisc) other;
+             int titleComparison = this.getTitle().compareTo(dvd.getTitle());
+             if (titleComparison == 0) {
+                 int lengthComparison = Integer.compare(dvd.getLength(), this.getLength()); // Độ dài giảm dần
+                 if (lengthComparison == 0) {
+                     return Float.compare(this.getCost(), dvd.getCost()); // Giá tăng dần
+                 }
+                 return lengthComparison;
+             }
+             return titleComparison;
+         }
+         return super.compareTo(other); // Dùng quy tắc mặc định của Media
+     }
+      
+   - Điều này đảm bảo rằng DVD có quy tắc riêng biệt, còn các loại Media khác tuân theo quy tắc mặc định.
+
